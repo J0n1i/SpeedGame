@@ -1,22 +1,45 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
-<link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css">
 
 </head>
+
 <body>
-    <p id="speedOfLight">0c</p>
-    <p id="speed">Speed: 0</p>
-    <p id="acceleration">Acceleration: 0</p>
-    <button id="incrementAcceleration">Accelerate</button>
-    <button id="decrementAcceleration">Decelerate</button>
+    <h3>Money</h3>
+    <p id="money">0</p>
+    <h3>Money Per Second</h3>
+    <p id="moneyPerSecond">0</p>
+
+    <button id="addMoneyButton">Add Money</button>
     <button id="reset">Reset</button>
-    <ul id="upgrades"></ul>
-<script src="game.js"></script>
+    <div id="lists">
+        <ul id="moneyUpgradesList"><h1>Buy money generators</h1></ul>
+        <ul id="shipPartsList"><h1>Buy parts</h1></ul>
+        <div>
+            <div>
+                <button id="ownedCategoryButton0">All</button>
+                <button id="ownedCategoryButton1">Command</button>
+                <button id="ownedCategoryButton2">Comms</button>
+                <button id="ownedCategoryButton3">Engine</button>
+                <button id="ownedCategoryButton4">Hull</button>
+                <button id="ownedCategoryButton5">Power</button>
+            </div>
+            <div id="ownedPartsList">
+                
+            </div>            
+        </div>
+
+        <ul id="installedParts"><h1>Installed parts</h1></ul>
+    </div>
+    <p id="versionNumber">Version: 0.0.2</p>
+    <script src="game.js"></script>
 
 </body>
+
 </html>

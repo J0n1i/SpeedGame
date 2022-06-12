@@ -2,3 +2,35 @@ body{
     background-color: black;
     color: rgb(217, 217, 217);
 }
+
+#lists{
+    display: flex;
+    
+}
+
+#lists li{
+    list-style: none;
+    margin: 10px;
+    padding: 10px;
+    border: 1px solid rgb(217, 217, 217);
+}
+
+
+.hidden{
+    display: none;
+}
+
+.active{
+    background-color: rgb(103, 255, 113);
+}
+
+#versionNumber{
+    color: rgb(217, 217, 217);
+    font-size: 20px;
+    font-weight: bold;
+    position: fixed;
+    right: 0;
+    down: 0;
+    padding: 0;
+    margin: 0;
+}

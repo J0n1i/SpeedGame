@@ -1,210 +1,278 @@
-const speedElement = document.getElementById("speed");
-const accelerationElement = document.getElementById("acceleration");
-const incrementAccelerationButton = document.getElementById("incrementAcceleration");
-const decrementAccelerationButton = document.getElementById("decrementAcceleration");
-const speedOfLightEleemnt = document.getElementById("speedOfLight");
-const resetButton = document.getElementById("reset");
-const upgradesElement = document.getElementById("upgrades");
+const moneyElement = document.getElementById('money');
+const moneyPerSecondElement = document.getElementById('moneyPerSecond');
+const addMoneyButton = document.getElementById('addMoneyButton');
+const moneyUpgradesListElement = document.getElementById('moneyUpgradesList');
+const shipPartsListElement = document.getElementById('shipPartsList');
+const ownedPartsListElement = document.getElementById('ownedPartsList');
 
 
-let speed = 0;
-let acceleration = 0;
+
+const ownedCategoryButtons = [
+    document.getElementById('ownedCategoryButton0'),
+    document.getElementById('ownedCategoryButton1'),
+    document.getElementById('ownedCategoryButton2'),
+    document.getElementById('ownedCategoryButton3'),
+    document.getElementById('ownedCategoryButton4'),
+    document.getElementById('ownedCategoryButton5'),
+]
+
+ownedCategoryButtons.forEach((button, index) => {
+    button.addEventListener('click', () => {
+        FilterOwnedParts(index);
+    })
+})
+
+
+function FilterOwnedParts(index) {
+    ownedPartsListElement.innerHTML = "";
+
+    let result = null;
+    if (index == 0) {
+        result = ownedParts;
+    } else {
+        result = ownedParts.filter(item => item.type == index - 1);
+    }
+
+
+    result.forEach(item => {
+        console.log(item)
+        ownedPartsListElement.appendChild(item.listElement[0]);
+    })
+}
+
+
+
 const speedOfLight = 299792458;
-let mass = 1;
-let energy = 1;
-let cSpeed = 0;
+
+let game = {
+    speed: 0,
+    money: 0,
+    moneyPerSec: 0,
+    acceleration: 0,
+    mass: 1,
+    energy: 1,
+    cSpeed: 0,
+}
 
 
-incrementAccelerationButton.addEventListener("click", () => {
-    speed += (acceleration / 10 + 0.1) / mass;
-});
+const NumberAbbreviation = ["", "K", "M", "B", "T", "Q", "Qt", "Sx", "Sp", "O", "N", "Dc", "U", "D", "T",
+    "Q", "Qt", "Sx", "Sp", "O", "N", "Dc", "U", "D", "T", "Q", "Qt", "Sx", "Sp", "O", "N", "Dc", "U",
+    "D", "T", "Q", "Qt", "Sx", "Sp", "O", "N", "Dc", "U", "D", "T", "Q", "Qt", "Sx", "Sp", "O", "N",
+    "Dc", "U", "D", "T", "Q", "Qt", "Sx", "Sp", "O", "N", "Dc", "U", "D", "T", "Q", "Qt", "Sx", "Sp",
+    "O", "N", "Dc", "U", "D", "T", "Q", "Qt", "Sx", "Sp", "O", "N", "Dc", "U", "D", "T", "Q", "Qt",
+    "Sx", "Sp", "O", "N", "Dc", "U", "D", "T", "Q", "Qt", "Sx", "Sp", "O", "N", "Dc", "U", "D", "T",
+    "Q", "Qt", "Sx", "Sp", "O", "N", "Dc", "U", "D", "T", "Q", "Qt", "Sx", "Sp", "O", "N", "Dc", "U",
+    "D", "T", "Q", "Qt", "Sx", "Sp", "O", "N", "Dc", "U", "D", "T", "Q", "Qt", "Sx", "Sp", "O", "N",
+    "Dc", "U", "D", "T", "Q", "Qt", "Sx", "Sp", "O", "N", "Dc"]
 
-decrementAccelerationButton.addEventListener("click", () => {
-    speed -= acceleration;
-});
 
-//reset
-resetButton.addEventListener("click", () => {
-    speed = 0; acceleration = 0;
-    localStorage.clear("game");
-    upgrades.forEach(element => {
-        element.amount = 0;
-    });
-    EmptyList();
-    RenderUpgrades();
-});
+let DisplayNumber = (number) => {
+    if (number < 1000) {
+        return number.toFixed(2)
+    } else {
+        let a = number;
+        a = a.toFixed(2);
+        a = a.toLocaleString("fullwide", { useGrouping: false });
+        let b = a.length;
+        c = ((b - 1) / 3)
+        c = Math.floor(c) - 1;
 
-//you can use stronger fuel when you're going faster
-class Upgrade {
+        let d = a.substring(0, (b - 4) % 3 + 1);
+
+        let e = a.substring(d.length, d.length + 2);
+
+        return d + "." + e + NumberAbbreviation[c]
+    }
+}
+
+
+
+class ShipPart {
+    name;
+    type;
+    cost;
+    boosts = [];
+    info;
+    installed = false;
+    owned = false;
+
+    CreateElements() {
+        for (let i = 1; i < this.listElement.length; i++) {
+            this.listElement[0].appendChild(this.listElement[i]);
+        }
+    }
+
+    SetOwned() {
+        this.owned = true;
+        this.listElement[3].innerHTML = "Install";
+        this.listElement[0].removeChild(this.listElement[2]);
+    }
+
+    constructor(name, type, cost, boosts, info) {
+        this.name = name;
+        this.type = type;
+        this.cost = cost;
+        this.boosts = boosts
+        this.info = info;
+
+        this.listElement = [5]
+
+        this.listElement[0] = document.createElement('li');
+        this.listElement[1] = document.createElement('h1');
+        this.listElement[2] = document.createElement('p');
+        this.listElement[3] = document.createElement('button');
+
+        this.listElement[1].innerHTML = this.name;
+        this.listElement[2].innerHTML = "$" + DisplayNumber(this.cost);
+        this.listElement[3].innerHTML = "Buy";
+    }
+}
+
+
+
+
+
+class MoneyUpgrade {
     amount = 0;
     name;
-    cost = 0
     baseCost;
-    accelerationBoost;
-
-    constructor(name, baseCost, accelerationBoost, amount = 0) {
-        this.amount = amount;
-        this.name = name;
-        this.accelerationBoost = accelerationBoost;
-        this.baseCost = baseCost
-
+    cost;
+    moneyPerSec;
+    info;
+    listElement;
+    updateCost() {
+        this.cost = this.baseCost * Math.pow(1.15, this.amount);
     }
-}
-
-upgrades = []
-upgrades[0] = new Upgrade("Hamster wheel", 1, 0.1)
-upgrades[1] = new Upgrade("Jet fuel engine", 100, 1)
-upgrades[2] = new Upgrade("Unicorn fart producer", 1000, 10)
-upgrades[3] = new Upgrade("Fusion engine", 10000, 50)
-upgrades[4] = new Upgrade("Super engine", 100000, 500)
-upgrades[5] = new Upgrade("aaa", 1000000, 1500)
-upgrades[6] = new Upgrade("bbb", 20000000, 10000)
-
-
-function RenderUpgrades() {
-    upgrades.forEach((e, index) => {
-        button = document.createElement("button");
-        li = document.createElement("li");
-        p = document.createElement("p");
-
-        button.setAttribute("id", index);
-
-        e.cost = e.amount == 0 ?
-            e.baseCost :
-            (e.baseCost * ((
-                Math.pow(1.15, e.amount + 1) - 1
-            ))) / 0.15;
-
-        displayCost = (e.cost / 1000).toFixed(2);
-        displayCost = parseFloat(parseFloat(displayCost).toFixed(2)).toLocaleString("en-US", { useGrouping: true });
-
-        displayAccelrationBoost = e.accelerationBoost
-        displayAccelrationBoost = parseFloat(parseFloat(displayAccelrationBoost).toFixed(2)).toLocaleString("en-US", { useGrouping: true });
-
-        p.innerHTML = e.amount + " " + e.name + " | Cost: " +
-            (e.cost < 1000 ? e.cost.toFixed(2) + "m/s" : displayCost + "km/s")
-            + " | Acceleration boost: " +
-            (e.accelerationBoost < 1000 ? displayAccelrationBoost + "m/s2" : e.accelerationBoost / 1000 + "km/s2")
-
-
-        button.innerHTML = e.name;
-
-        li.appendChild(button)
-        li.appendChild(p)
-        upgradesElement.appendChild(li);
-
-
-        button.addEventListener("click", (e) => {
-            item = upgrades[e.target.id];
-            if (speed >= item.cost) {
-                item.amount++;
-                acceleration += item.accelerationBoost;
-                speed -= item.cost;
-                EmptyList()
-                RenderUpgrades();
-            }
-        });
-    })
-
-}
-
-function EmptyList() {
-    var child = upgradesElement.lastElementChild;
-    while (child) {
-        upgradesElement.removeChild(child);
-        child = upgradesElement.lastElementChild;
+    UpdateElements() {
+        this.listElement[2].innerHTML = this.amount;
+        this.listElement[4].innerHTML = "$" + DisplayNumber(this.cost);
     }
-}
-
-//Main Loop
-setInterval(() => {
-    energy = (1 / Math.sqrt(1 - ((speed / speedOfLight) * (speed / speedOfLight))))
-    mass = 1 / Math.sqrt(1 - (speed * speed) / (speedOfLight * speedOfLight))
-
-    /*
-        console.log(1 / mass);
-        console.log("energy: ", energy)
-        console.log("acceleration: ", 1 / mass)
-        console.log("mass: ", mass)
-        */
-
-    if (speed > 299792457.99) {
-        speed = 299792457.99
-        acceleration = 0;
-        alert("While our ship has been traveling near the speed of light, our scientists have discovered dark matter. We can use it to go faster than c, but we have to stop to install a new engine.")
-    } else {
-        speed += (acceleration / mass) / 100;
-    }
-
-    let num = (speed / 1000).toFixed(2)
-
-    num = parseFloat(parseFloat(num).toFixed(2)).toLocaleString("en-US", { useGrouping: true });
-
-
-    speedElement.innerHTML = speed <= 1000 ? speed.toFixed(1) + "m/s" : num + "km/s";
-    accelerationElement.innerHTML = acceleration >= 1000 ? ((acceleration / mass) / 1000).toFixed(2) + "km/s2" : (acceleration / mass).toFixed(1) + "m/s2";
-
-
-
-
-    if (speed != 0) {
-        let relativeToSpeedOfLight = speed / speedOfLight;
-        relativeToSpeedOfLight = relativeToSpeedOfLight.toFixed(Math.floor(Math.abs(Math.log10(relativeToSpeedOfLight) - 3)));
-        speedOfLightEleemnt.innerHTML = relativeToSpeedOfLight.toString().slice(0, -1) + "c"
-    } else {
-        speedOfLightEleemnt.innerHTML = 0 + "c"
-    }
-
-
-
-}, 10)
-
-LoadGame();
-SaveGame();
-
-game = {}
-time = 0;
-
-function LoadGame() {
-    game = JSON.parse(localStorage.getItem("game"))
-    if (game == null) return
-    acceleration = game.acceleration;
-    speed = game.speed;
-    time = (Date.now() - game.time)
-    time = time / 1000;
-
-
-    upgrades.map((e, index) => {
-        e.amount = game.upgrades[index]
-        if (e.amount == null || e.amount == undefined) e.amount = 0;
-    })
-
-    console.log("Time since last save: ", time)
-    Object.keys(game).forEach(key => {
-        if (key == null) {
-            key = 0;
+    CreateElements() {
+        for (let i = 1; i < this.listElement.length; i++) {
+            this.listElement[0].appendChild(this.listElement[i]);
         }
-    });
-
-
-    if (time > 5) {
-        alert("You've gained " + ((acceleration * time) / mass).toFixed(0) + "m/s since you were last here.")
-        speed += ((acceleration * time) / mass)
     }
 
+    constructor(name, baseCost, moneyPerSec, info) {
+        this.name = name;
+        this.baseCost = baseCost;
+        this.moneyPerSec = moneyPerSec;
+        this.info = info;
+        this.cost = this.baseCost;
 
-    RenderUpgrades();
+        this.listElement = [6];
+
+        this.listElement[0] = document.createElement('li');
+        this.listElement[1] = document.createElement('h1');
+        this.listElement[2] = document.createElement('h3');
+        this.listElement[3] = document.createElement('button');
+        this.listElement[4] = document.createElement('p');
+        this.listElement[5] = document.createElement('p');
+
+        this.listElement[1].innerHTML = this.name;
+        this.listElement[2].innerHTML = this.amount;
+        this.listElement[3].innerHTML = "Buy";
+        this.listElement[4].innerHTML = "$" + DisplayNumber(this.cost);
+        this.listElement[5].innerHTML = "+ $" + DisplayNumber(this.moneyPerSec) + "/s";
+    }
 }
 
-function SaveGame() {
-    game = {
-        speed: speed,
-        acceleration: acceleration,
-        time: Date.now(),
-        upgrades: upgrades.map(e => { return e.amount })
+
+partTypes = ["Command", "Comms", "Engine", "Hull", "Power"];
+
+ShipParts = []
+ShipParts[0] = new ShipPart("Cockpit-mk1", 0, 100, [], "");
+ShipParts[1] = new ShipPart("Comms-mk1", 1, 100, [], "");
+ShipParts[2] = new ShipPart("Engine-mk1", 2, 100, [], "");
+ShipParts[3] = new ShipPart("Hull-mk1", 3, 100, [], "");
+ShipParts[4] = new ShipPart("Power-mk1", 4, 100, [], "");
+
+ShipParts[5] = new ShipPart("Cockpit-mk2", 0, 1000, [], "");
+ShipParts[6] = new ShipPart("Comms-mk2", 1, 1000, [], "");
+ShipParts[7] = new ShipPart("Engine-mk2", 2, 1000, [], "");
+ShipParts[8] = new ShipPart("Hull-mk2", 3, 1000, [], "");
+ShipParts[9] = new ShipPart("Power-mk2", 4, 1000, [], "");
+
+addMoneyButton.addEventListener('click', AddMoney);
+
+game.moneyPerSec = 1;
+
+function AddMoney() {
+    game.money += game.moneyPerSec / 10 + 10;
+}
+
+
+MoneyUpgrades = [];
+MoneyUpgrades[0] = new MoneyUpgrade("Robbing The elderly", 1, 0.1, "You monster!");
+MoneyUpgrades[1] = new MoneyUpgrade("Stealing lollipops from children", 10, 1, "Why are you doing this?");
+MoneyUpgrades[2] = new MoneyUpgrade("Begging", 100, 10, "You're a good person, but you're also a bad person.");
+MoneyUpgrades[3] = new MoneyUpgrade("Finding pennies on the ground", 1000, 100, "Enjoying yourself?");
+
+
+
+let currentMoneyUpgrade = 0;
+let currentShipPart = 0;
+
+//Main game loop
+setInterval(() => {
+    game.money += game.moneyPerSec / 1000;
+    moneyElement.innerHTML = "$" + DisplayNumber(game.money);
+    moneyPerSecondElement.innerHTML = "$" + DisplayNumber(game.moneyPerSec) + "/s";
+
+    if (MoneyUpgrades[currentMoneyUpgrade] != null) {
+        if (game.money >= MoneyUpgrades[currentMoneyUpgrade].cost) {
+            AddMoneyUpgrade(MoneyUpgrades[currentMoneyUpgrade]);
+            currentMoneyUpgrade++;
+        }
     }
-    setTimeout(() => {
-        SaveGame();
-        localStorage.setItem("game", JSON.stringify(game));
-    }, 1000)
+
+    if (ShipParts[currentShipPart] != null) {
+        if (game.money >= ShipParts[currentShipPart].cost) {
+            AddShipPart(ShipParts[currentShipPart]);
+            currentShipPart++;
+        }
+    }
+}, 1);
+
+function AddMoneyUpgrade(item) {
+    item.CreateElements();
+    moneyUpgradesListElement.appendChild(item.listElement[0]);
+    item.listElement[3].addEventListener('click', () => {
+        BuyUpgrade(item);
+    });
+}
+
+function AddShipPart(item) {
+    item.CreateElements();
+    shipPartsListElement.appendChild(item.listElement[0]);
+    item.listElement[3].addEventListener('click', () => {
+        BuyShipPart(item);
+    });
+}
+
+function BuyUpgrade(item) {
+    if (game.money >= item.cost) {
+        game.money -= item.cost;
+        game.moneyPerSec += item.moneyPerSec;
+        item.amount++;
+        item.updateCost();
+        item.UpdateElements();
+    }
+}
+
+let ownedParts = [];
+
+function BuyShipPart(item) {
+    if (item.owned == false) {
+        if (game.money >= item.cost) {
+            FilterOwnedParts(0);
+            game.money -= item.cost;
+            shipPartsListElement.removeChild(item.listElement[0]);
+
+            ownedParts.push(item)
+            item.SetOwned();
+        }
+    } else {
+        console.log(item.name + " installed")
+    }
 }
