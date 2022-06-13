@@ -44,15 +44,22 @@ function FilterOwnedParts(index) {
 
 const speedOfLight = 299792458;
 
-let game = {
-    speed: 0,
-    money: 0,
-    moneyPerSec: 0,
-    acceleration: 0,
-    mass: 1,
-    energy: 1,
-    cSpeed: 0,
+class Game {
+    speed = 0;
+    money = 0;
+    moneyPerSec = 0;
+    acceleration = 0;
+    mass = 1;
+    energy = 1;
+    cSpeed = 0;
+
+    EarnMoney(amount) {
+        this.money += amount;
+        console.log("Added $" + amount.toLocaleString());
+    }
 }
+
+game = new Game();
 
 
 const NumberAbbreviation = ["", "K", "M", "B", "T", "Q", "Qt", "Sx", "Sp", "O", "N", "Dc", "U", "D", "T",
@@ -95,7 +102,7 @@ class ShipPart {
     info;
     installed = false;
     owned = false;
-
+    installTime = 0;
     CreateElements() {
         for (let i = 1; i < this.listElement.length; i++) {
             this.listElement[0].appendChild(this.listElement[i]);
@@ -104,27 +111,28 @@ class ShipPart {
 
     SetOwned() {
         this.owned = true;
-        this.listElement[3].innerHTML = "Install";
         this.listElement[0].removeChild(this.listElement[2]);
     }
 
-    constructor(name, type, cost, boosts, info) {
+    constructor(name, type, cost, boosts, installTime, info) {
         this.name = name;
         this.type = type;
         this.cost = cost;
         this.boosts = boosts
         this.info = info;
+        this.installTime = installTime;
 
         this.listElement = [5]
 
-        this.listElement[0] = document.createElement('li');
-        this.listElement[1] = document.createElement('h1');
+        this.listElement[0] = document.createElement('button');
+        this.listElement[1] = document.createElement('h2');
         this.listElement[2] = document.createElement('p');
-        this.listElement[3] = document.createElement('button');
+
+        this.listElement[0].classList.add("list-group-item");
 
         this.listElement[1].innerHTML = this.name;
         this.listElement[2].innerHTML = "$" + DisplayNumber(this.cost);
-        this.listElement[3].innerHTML = "Buy";
+
     }
 }
 
@@ -145,7 +153,7 @@ class MoneyUpgrade {
     }
     UpdateElements() {
         this.listElement[2].innerHTML = this.amount;
-        this.listElement[4].innerHTML = "$" + DisplayNumber(this.cost);
+        this.listElement[3].innerHTML = "$" + DisplayNumber(this.cost);
     }
     CreateElements() {
         for (let i = 1; i < this.listElement.length; i++) {
@@ -162,18 +170,19 @@ class MoneyUpgrade {
 
         this.listElement = [6];
 
-        this.listElement[0] = document.createElement('li');
-        this.listElement[1] = document.createElement('h1');
+        this.listElement[0] = document.createElement('button');
+        this.listElement[1] = document.createElement('h2');
         this.listElement[2] = document.createElement('h3');
-        this.listElement[3] = document.createElement('button');
+        this.listElement[3] = document.createElement('p');
         this.listElement[4] = document.createElement('p');
-        this.listElement[5] = document.createElement('p');
+
+        this.listElement[0].classList.add("list-group-item");
+        this.listElement[0].classList.add("btn");
 
         this.listElement[1].innerHTML = this.name;
         this.listElement[2].innerHTML = this.amount;
-        this.listElement[3].innerHTML = "Buy";
-        this.listElement[4].innerHTML = "$" + DisplayNumber(this.cost);
-        this.listElement[5].innerHTML = "+ $" + DisplayNumber(this.moneyPerSec) + "/s";
+        this.listElement[3].innerHTML = "$" + DisplayNumber(this.cost);
+        this.listElement[4].innerHTML = "+ $" + DisplayNumber(this.moneyPerSec) + "/s";
     }
 }
 
@@ -181,17 +190,16 @@ class MoneyUpgrade {
 partTypes = ["Command", "Comms", "Engine", "Hull", "Power"];
 
 ShipParts = []
-ShipParts[0] = new ShipPart("Cockpit-mk1", 0, 100, [], "");
-ShipParts[1] = new ShipPart("Comms-mk1", 1, 100, [], "");
-ShipParts[2] = new ShipPart("Engine-mk1", 2, 100, [], "");
-ShipParts[3] = new ShipPart("Hull-mk1", 3, 100, [], "");
-ShipParts[4] = new ShipPart("Power-mk1", 4, 100, [], "");
-
-ShipParts[5] = new ShipPart("Cockpit-mk2", 0, 1000, [], "");
-ShipParts[6] = new ShipPart("Comms-mk2", 1, 1000, [], "");
-ShipParts[7] = new ShipPart("Engine-mk2", 2, 1000, [], "");
-ShipParts[8] = new ShipPart("Hull-mk2", 3, 1000, [], "");
-ShipParts[9] = new ShipPart("Power-mk2", 4, 1000, [], "");
+ShipParts[0] = new ShipPart("Cockpit-mk1", 0, 100, [], 10,"");
+ShipParts[1] = new ShipPart("Comms-mk1", 1, 100, [], 10,"");
+ShipParts[2] = new ShipPart("Engine-mk1", 2, 100, [], 10,"");
+ShipParts[3] = new ShipPart("Hull-mk1", 3, 100, [], 10,"");
+ShipParts[4] = new ShipPart("Power-mk1", 4, 100, [], 10,"");
+ShipParts[5] = new ShipPart("Cockpit-mk2", 0, 1000, [], 10,"");
+ShipParts[6] = new ShipPart("Comms-mk2", 1, 1000, [], 10,"");
+ShipParts[7] = new ShipPart("Engine-mk2", 2, 1000, [], 10,"");
+ShipParts[8] = new ShipPart("Hull-mk2", 3, 1000, [], 10,"");
+ShipParts[9] = new ShipPart("Power-mk2", 4, 1000, [], 10,"");
 
 addMoneyButton.addEventListener('click', AddMoney);
 
@@ -232,12 +240,34 @@ setInterval(() => {
             currentShipPart++;
         }
     }
+
+    
+    MoneyUpgrades.forEach(element => {
+        if (game.money < element.cost) {
+            element.listElement[0].disabled = true;
+        } else {
+            element.listElement[0].disabled = false;
+        }
+    })
+
+    ShipParts.forEach(element => {
+        if (game.money < element.cost) {
+            element.listElement[0].disabled = true;
+        } else {
+            element.listElement[0].disabled = false;
+        }
+    })
+
+
+
+
+
 }, 1);
 
 function AddMoneyUpgrade(item) {
     item.CreateElements();
     moneyUpgradesListElement.appendChild(item.listElement[0]);
-    item.listElement[3].addEventListener('click', () => {
+    item.listElement[0].addEventListener('click', () => {
         BuyUpgrade(item);
     });
 }
@@ -245,7 +275,7 @@ function AddMoneyUpgrade(item) {
 function AddShipPart(item) {
     item.CreateElements();
     shipPartsListElement.appendChild(item.listElement[0]);
-    item.listElement[3].addEventListener('click', () => {
+    item.listElement[0].addEventListener('click', () => {
         BuyShipPart(item);
     });
 }
